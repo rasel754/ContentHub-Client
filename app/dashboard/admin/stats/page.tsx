@@ -1,8 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Users, FileText, TrendingUp, DollarSign } from 'lucide-react'
 import { Bar, Doughnut } from 'react-chartjs-2'
+import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -42,6 +44,24 @@ const StatCard = ({ icon: Icon, label, value, change }: any) => (
 )
 
 export default function AdminStatsPage() {
+  const { user, isLoaded } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isLoaded && user?.publicMetadata?.role !== 'admin' && user?.publicMetadata?.role !== 'manager') {
+      router.push('/dashboard')
+    }
+  }, [isLoaded, user, router])
+
+  if (!isLoaded || (user?.publicMetadata?.role !== 'admin' && user?.publicMetadata?.role !== 'manager')) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-center space-y-2">
+          <p className="text-muted-foreground animate-pulse">Checking authorization...</p>
+        </div>
+      </div>
+    )
+  }
   // Bar Chart Data & Options (User Growth)
   const growthData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],

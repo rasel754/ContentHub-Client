@@ -6,6 +6,7 @@ import { Search, ChevronLeft, ChevronRight, FileText, Sparkles, Filter, RefreshC
 import { Button } from '@/components/ui/button';
 import { useAllContent } from '@/hooks/useContent';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const categories = [
   { value: 'All', label: 'All Formats' },
@@ -29,20 +30,17 @@ const typeLabels: Record<string, string> = {
 export default function ExplorePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [dateRange, setDateRange] = useState('all'); // all, 24h, 7d, 30d
   const [sortBy, setSortBy] = useState('latest'); // latest, oldest
 
-  // Debounce search state
+  // Reset page to 1 when filters or search change
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
+    setCurrentPage(1);
+  }, [debouncedSearch, selectedCategory, dateRange, sortBy]);
 
-  // Fetch all contents from backend (with optional backend format filter)
+  // Fetch all contents from backend using debounced filters
   const {
     data,
     isLoading,
@@ -51,42 +49,19 @@ export default function ExplorePage() {
     isFetching,
   } = useAllContent({
     type: selectedCategory !== 'All' ? (selectedCategory as any) : undefined,
-    page: 1, // we fetch a larger page size or handle pagination client-side for smoother searching
-    limit: 100,
+    page: currentPage,
+    limit: 8,
     sortBy: 'createdAt',
     sortOrder: sortBy === 'latest' ? 'desc' : 'asc',
+    search: debouncedSearch || undefined,
+    dateRange: dateRange !== 'all' ? dateRange : undefined,
   });
 
   const contentList = data?.data || [];
-
-  // Filter content items client-side via the search term & date range
-  const filtered = contentList.filter((item) => {
-    const matchesSearch =
-      item.prompt.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      item.output.toLowerCase().includes(debouncedSearch.toLowerCase());
-
-    let matchesDate = true;
-    if (dateRange !== 'all') {
-      const createdTime = new Date(item.createdAt).getTime();
-      const now = new Date().getTime();
-      const elapsedHours = (now - createdTime) / (1000 * 60 * 60);
-      if (dateRange === '24h') {
-        matchesDate = elapsedHours <= 24;
-      } else if (dateRange === '7d') {
-        matchesDate = elapsedHours <= 24 * 7;
-      } else if (dateRange === '30d') {
-        matchesDate = elapsedHours <= 24 * 30;
-      }
-    }
-
-    return matchesSearch && matchesDate;
-  });
-
-  // Client-side pagination
+  const total = data?.meta?.total || 0;
+  const totalPages = data?.meta?.totalPage || 1;
   const itemsPerPage = 8;
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
   const getFormatBadgeColor = (type: string) => {
     switch (type) {
@@ -208,8 +183,8 @@ export default function ExplorePage() {
         {/* Results Info */}
         {!isLoading && (
           <p className="text-sm text-muted-foreground">
-            Showing {filtered.length > 0 ? startIndex + 1 : 0}–
-            {Math.min(startIndex + itemsPerPage, filtered.length)} of {filtered.length} results
+            Showing {contentList.length > 0 ? startIndex + 1 : 0}–
+            {Math.min(startIndex + contentList.length, total)} of {total} results
           </p>
         )}
 
@@ -232,11 +207,11 @@ export default function ExplorePage() {
             <p className="text-muted-foreground mb-4">Please make sure the backend server is running and try again.</p>
             <Button onClick={() => refetch()}>Retry Connection</Button>
           </div>
-        ) : paginatedItems.length > 0 ? (
+        ) : contentList.length > 0 ? (
           <>
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedItems.map((item) => (
+              {contentList.map((item) => (
                 <Link key={item._id} href={`/explore/${item._id}`} className="group h-full">
                   <div className="border rounded-2xl overflow-hidden bg-card hover:border-primary/40 transition-all duration-300 hover:shadow-lg flex flex-col h-full cursor-pointer relative">
                     {/* Image Header */}
@@ -323,12 +298,13 @@ export default function ExplorePage() {
           <div className="text-center py-20 border rounded-2xl bg-card border-dashed">
             <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground text-lg">No content found matching your criteria.</p>
-            {(searchTerm || selectedCategory !== 'All') && (
+            {(searchTerm || selectedCategory !== 'All' || dateRange !== 'all') && (
               <Button
                 variant="outline"
                 onClick={() => {
                   setSearchTerm('');
                   setSelectedCategory('All');
+                  setDateRange('all');
                   setCurrentPage(1);
                 }}
                 className="mt-4"

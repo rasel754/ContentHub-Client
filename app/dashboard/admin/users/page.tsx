@@ -2,9 +2,11 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Trash2, Shield, User } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 
 const mockUsers = [
   { id: 1, name: 'John Doe', email: 'john@example.com', role: 'user', status: 'active', joined: 'Nov 20, 2024' },
@@ -15,8 +17,26 @@ const mockUsers = [
 ]
 
 export default function AdminUsersPage() {
+  const { user, isLoaded } = useUser()
+  const router = useRouter()
   const [users, setUsers] = useState(mockUsers)
   const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    if (isLoaded && user?.publicMetadata?.role !== 'admin') {
+      router.push('/dashboard')
+    }
+  }, [isLoaded, user, router])
+
+  if (!isLoaded || user?.publicMetadata?.role !== 'admin') {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-center space-y-2">
+          <p className="text-muted-foreground animate-pulse">Checking authorization...</p>
+        </div>
+      </div>
+    )
+  }
 
   const filtered = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

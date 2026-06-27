@@ -25,6 +25,9 @@ export interface ContentQueryParams {
   limit?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  search?: string;
+  dateRange?: string;
+  all?: boolean;
 }
 
 export interface ContentMeta {
@@ -50,6 +53,9 @@ export const contentService = {
     if (params?.limit) queryParams.limit = String(params.limit);
     if (params?.sortBy) queryParams.sortBy = params.sortBy;
     if (params?.sortOrder) queryParams.sortOrder = params.sortOrder;
+    if (params?.search) queryParams.search = params.search;
+    if (params?.dateRange) queryParams.dateRange = params.dateRange;
+    if (params?.all) queryParams.all = String(params.all);
 
     const response = await apiClient.get<ContentListResponse>('/content', {
       params: queryParams,

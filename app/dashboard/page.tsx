@@ -10,6 +10,7 @@ import { BarChart3, FileText, Zap, TrendingUp, Sparkles, MessageSquare } from 'l
 export default function DashboardPage() {
   const { user } = useUser()
   const isAdmin = user?.publicMetadata?.role === 'admin'
+  const isManager = user?.publicMetadata?.role === 'manager'
 
   return (
     <div className="p-6 space-y-6">
@@ -121,22 +122,24 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Admin Section */}
-      {isAdmin && (
+      {/* Admin / Manager Section */}
+      {(isAdmin || isManager) && (
         <div className="p-6 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-          <h2 className="text-xl font-bold mb-4">Admin Tools</h2>
+          <h2 className="text-xl font-bold mb-4">{isAdmin ? 'Admin Tools' : 'Manager Tools'}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Link href="/dashboard/admin/users">
-              <Button className="w-full" variant="outline">
-                Manage Users
-              </Button>
-            </Link>
-            <Link href="/dashboard/admin/content">
+            {isAdmin && (
+              <Link href="/dashboard/admin/users">
+                <Button className="w-full" variant="outline">
+                  Manage Users
+                </Button>
+              </Link>
+            )}
+            <Link href="/dashboard/admin/content" className={isManager && !isAdmin ? "col-span-1 sm:col-span-1.5" : ""}>
               <Button className="w-full" variant="outline">
                 Review Content
               </Button>
             </Link>
-            <Link href="/dashboard/admin/stats">
+            <Link href="/dashboard/admin/stats" className={isManager && !isAdmin ? "col-span-1 sm:col-span-1.5" : ""}>
               <Button className="w-full" variant="outline">
                 View Analytics
               </Button>

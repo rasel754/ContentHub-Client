@@ -1,12 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAllContent, useUpdateContentItem, useDeleteContentItem } from '@/hooks/useContent';
 import { Trash2, Eye, Edit3, X, Loader2, Sparkles, Filter, Search, Calendar, User } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 export default function AdminContentPage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFormat, setSelectedFormat] = useState('all');
   
@@ -16,13 +20,31 @@ export default function AdminContentPage() {
   const [editOutput, setEditOutput] = useState('');
   const [viewingItem, setViewingItem] = useState<any | null>(null);
 
+  // Guard access before fetching or rendering
+  useEffect(() => {
+    if (isLoaded && user?.publicMetadata?.role !== 'admin' && user?.publicMetadata?.role !== 'manager') {
+      router.push('/dashboard');
+    }
+  }, [isLoaded, user, router]);
+
   // TanStack Hooks
   const { data: contentsData, isLoading, isError, refetch } = useAllContent({
     limit: 100,
+    all: true,
   });
 
   const updateMutation = useUpdateContentItem();
   const deleteMutation = useDeleteContentItem();
+
+  if (!isLoaded || (user?.publicMetadata?.role !== 'admin' && user?.publicMetadata?.role !== 'manager')) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-center space-y-2">
+          <p className="text-muted-foreground animate-pulse">Checking authorization...</p>
+        </div>
+      </div>
+    );
+  }
 
   const contents = contentsData?.data || [];
 

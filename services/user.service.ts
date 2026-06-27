@@ -7,7 +7,7 @@ export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'manager';
   profileImageUrl?: string;
   createdAt: string;
   updatedAt: string;
