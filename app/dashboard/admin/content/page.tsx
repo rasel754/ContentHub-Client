@@ -1,12 +1,29 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { useAllContent, useUpdateContentItem, useDeleteContentItem } from '@/hooks/useContent';
-import { Trash2, Eye, Edit3, X, Loader2, Sparkles, Filter, Search, Calendar, User } from 'lucide-react';
+import { Trash2, Eye, Edit3, X, Loader2, Sparkles, Search, Calendar, User } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+
+const contentEditSchema = z.object({
+  prompt: z
+    .string()
+    .trim()
+    .min(10, 'Prompt title must be at least 10 characters long')
+    .max(1000, 'Prompt title cannot exceed 1000 characters'),
+  output: z
+    .string()
+    .trim()
+    .min(10, 'Generated output content must be at least 10 characters long'),
+});
+
+type ContentEditFormData = z.infer<typeof contentEditSchema>;
 
 export default function AdminContentPage() {
   const { user, isLoaded } = useUser();
@@ -16,8 +33,6 @@ export default function AdminContentPage() {
   
   // Modal States
   const [editingItem, setEditingItem] = useState<any | null>(null);
-  const [editPrompt, setEditPrompt] = useState('');
-  const [editOutput, setEditOutput] = useState('');
   const [viewingItem, setViewingItem] = useState<any | null>(null);
 
   // Guard access before fetching or rendering
@@ -36,11 +51,25 @@ export default function AdminContentPage() {
   const updateMutation = useUpdateContentItem();
   const deleteMutation = useDeleteContentItem();
 
+  // Form Setup
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContentEditFormData>({
+    resolver: zodResolver(contentEditSchema),
+    defaultValues: {
+      prompt: '',
+      output: '',
+    },
+  });
+
   if (!isLoaded || (user?.publicMetadata?.role !== 'admin' && user?.publicMetadata?.role !== 'manager')) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="text-center space-y-2">
-          <p className="text-muted-foreground animate-pulse">Checking authorization...</p>
+          <p className="text-muted-foreground animate-pulse font-semibold">Checking authorization...</p>
         </div>
       </div>
     );
@@ -62,20 +91,21 @@ export default function AdminContentPage() {
 
   const handleEditClick = (item: any) => {
     setEditingItem(item);
-    setEditPrompt(item.prompt);
-    setEditOutput(item.output);
+    reset({
+      prompt: item.prompt,
+      output: item.output,
+    });
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingItem || !editPrompt.trim() || !editOutput.trim()) return;
+  const handleSaveEdit = (data: ContentEditFormData) => {
+    if (!editingItem) return;
 
     updateMutation.mutate(
       {
         id: editingItem._id,
         data: {
-          prompt: editPrompt.trim(),
-          output: editOutput.trim(),
+          prompt: data.prompt.trim(),
+          output: data.output.trim(),
         },
       },
       {
@@ -123,21 +153,21 @@ export default function AdminContentPage() {
           <h1 className="text-3xl font-bold tracking-tight mb-1">Manage Database Content</h1>
           <p className="text-muted-foreground">Modify, inspect, or remove AI-generated records globally</p>
         </div>
-        <div className="text-xs text-muted-foreground self-start sm:self-center font-semibold bg-card px-3 py-1.5 border rounded-lg">
+        <div className="text-xs text-muted-foreground self-start sm:self-center font-bold bg-card px-3 py-1.5 border rounded-lg shadow-sm">
           Total Items: {contents.length}
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-card border rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-card border rounded-3xl p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-2.5 w-4.5 h-4.5 text-muted-foreground" />
+          <Search className="absolute left-3.5 top-3 w-4.5 h-4.5 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search prompts, outputs, or user IDs..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full pl-10 pr-4 py-2.5 text-sm rounded-2xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary transition-all"
           />
         </div>
         
@@ -146,7 +176,7 @@ export default function AdminContentPage() {
           <select
             value={selectedFormat}
             onChange={(e) => setSelectedFormat(e.target.value)}
-            className="px-3 py-2 text-sm rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary w-full md:w-40 font-semibold"
+            className="px-3.5 py-2.5 text-sm rounded-2xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary w-full md:w-40 font-bold"
           >
             <option value="all">All Formats</option>
             <option value="blog">Blog Articles</option>
@@ -154,7 +184,7 @@ export default function AdminContentPage() {
             <option value="summary">Summaries</option>
           </select>
           
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="px-4">
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="px-4 py-5 rounded-2xl font-semibold cursor-pointer">
             Reload
           </Button>
         </div>
@@ -162,29 +192,29 @@ export default function AdminContentPage() {
 
       {/* Content Table */}
       {isLoading ? (
-        <div className="border rounded-2xl p-4 space-y-4 bg-card">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
+        <div className="border rounded-3xl p-6 space-y-4 bg-card shadow-sm">
+          <Skeleton className="h-10 w-full rounded" />
+          <Skeleton className="h-12 w-full rounded" />
+          <Skeleton className="h-12 w-full rounded" />
+          <Skeleton className="h-12 w-full rounded" />
         </div>
       ) : isError ? (
-        <div className="text-center py-16 border rounded-2xl bg-card border-dashed">
-          <p className="text-red-500 font-medium text-lg mb-2">Error connecting to the API</p>
+        <div className="text-center py-16 border border-dashed rounded-3xl bg-card">
+          <p className="text-red-500 font-bold text-lg mb-2">Error connecting to the API</p>
           <p className="text-muted-foreground mb-4">Please make sure the backend server is running and try again.</p>
-          <Button onClick={() => refetch()}>Retry Connection</Button>
+          <Button onClick={() => refetch()} className="rounded-2xl cursor-pointer">Retry Connection</Button>
         </div>
       ) : filtered.length > 0 ? (
-        <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-card border rounded-3xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead className="border-b bg-muted/30">
                 <tr className="text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  <th className="px-6 py-4">Prompt Title</th>
-                  <th className="px-6 py-4">User ID (Author)</th>
-                  <th className="px-6 py-4">Format</th>
-                  <th className="px-6 py-4">Created Date</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-4 font-bold">Prompt Title</th>
+                  <th className="px-6 py-4 font-bold">User ID (Author)</th>
+                  <th className="px-6 py-4 font-bold">Format</th>
+                  <th className="px-6 py-4 font-bold">Created Date</th>
+                  <th className="px-6 py-4 text-right font-bold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y text-sm">
@@ -211,7 +241,7 @@ export default function AdminContentPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setViewingItem(item)}
-                        className="p-2 h-9 w-9 rounded-lg"
+                        className="p-2 h-9 w-9 rounded-xl cursor-pointer shadow-sm"
                       >
                         <Eye size={16} />
                       </Button>
@@ -219,7 +249,7 @@ export default function AdminContentPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEditClick(item)}
-                        className="p-2 h-9 w-9 rounded-lg text-primary hover:text-primary"
+                        className="p-2 h-9 w-9 rounded-xl text-primary hover:text-primary cursor-pointer shadow-sm"
                         disabled={isSaving}
                       >
                         <Edit3 size={16} />
@@ -228,7 +258,7 @@ export default function AdminContentPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleDeleteClick(item._id)}
-                        className="p-2 h-9 w-9 rounded-lg text-destructive hover:text-destructive"
+                        className="p-2 h-9 w-9 rounded-xl text-destructive hover:text-destructive cursor-pointer shadow-sm"
                         disabled={deleteMutation.isPending}
                       >
                         <Trash2 size={16} />
@@ -241,55 +271,61 @@ export default function AdminContentPage() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-16 border rounded-2xl bg-card border-dashed">
-          <p className="text-muted-foreground">No records found matching your filters.</p>
+        <div className="text-center py-16 border border-dashed rounded-3xl bg-card">
+          <p className="text-muted-foreground font-semibold">No records found matching your filters.</p>
         </div>
       )}
 
       {/* Modal: Edit content item */}
       {editingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border rounded-2xl max-w-2xl w-full shadow-xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+          <div className="bg-card border rounded-3xl max-w-2xl w-full shadow-xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b flex justify-between items-center bg-muted/20">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
                 Edit Content Item
               </h2>
-              <button onClick={() => setEditingItem(null)} className="p-1 hover:bg-muted rounded-lg transition-colors">
+              <button onClick={() => setEditingItem(null)} className="p-1 hover:bg-muted rounded-xl transition-colors">
                 <X size={20} />
               </button>
             </div>
             
-            <form onSubmit={handleSaveEdit} className="p-6 space-y-4 overflow-y-auto flex-1">
+            <form onSubmit={handleSubmit(handleSaveEdit)} className="p-6 space-y-4 overflow-y-auto flex-1">
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">Prompt Title</label>
                 <input
                   type="text"
-                  value={editPrompt}
-                  onChange={(e) => setEditPrompt(e.target.value)}
+                  {...register('prompt')}
                   disabled={isSaving}
-                  required
-                  className="w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-sm disabled:opacity-50"
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-sm disabled:opacity-50 transition-all ${
+                    errors.prompt ? 'border-destructive focus:ring-destructive' : ''
+                  }`}
                 />
+                {errors.prompt && (
+                  <p className="text-xs text-destructive font-semibold">{errors.prompt.message}</p>
+                )}
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">Generated Output</label>
                 <textarea
-                  value={editOutput}
-                  onChange={(e) => setEditOutput(e.target.value)}
+                  {...register('output')}
                   disabled={isSaving}
-                  required
                   rows={10}
-                  className="w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none disabled:opacity-50 font-mono"
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-sm resize-none disabled:opacity-50 font-mono transition-all ${
+                    errors.output ? 'border-destructive focus:ring-destructive' : ''
+                  }`}
                 />
+                {errors.output && (
+                  <p className="text-xs text-destructive font-semibold">{errors.output.message}</p>
+                )}
               </div>
 
               <div className="border-t pt-4 flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} disabled={isSaving}>
+                <Button type="button" variant="outline" onClick={() => setEditingItem(null)} disabled={isSaving} className="rounded-2xl cursor-pointer">
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSaving} className="min-w-[100px]">
+                <Button type="submit" disabled={isSaving} className="min-w-[100px] rounded-2xl cursor-pointer font-semibold">
                   {isSaving ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -308,7 +344,7 @@ export default function AdminContentPage() {
       {/* Modal: View content item details */}
       {viewingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card border rounded-2xl max-w-2xl w-full shadow-xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
+          <div className="bg-card border rounded-3xl max-w-2xl w-full shadow-xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b flex justify-between items-center bg-muted/20">
               <div>
                 <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mb-1 ${getFormatColor(viewingItem.type)}`}>
@@ -316,7 +352,7 @@ export default function AdminContentPage() {
                 </span>
                 <h2 className="text-base font-bold text-foreground leading-tight">{viewingItem.prompt}</h2>
               </div>
-              <button onClick={() => setViewingItem(null)} className="p-1 hover:bg-muted rounded-lg transition-colors">
+              <button onClick={() => setViewingItem(null)} className="p-1 hover:bg-muted rounded-xl transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -340,7 +376,7 @@ export default function AdminContentPage() {
               </div>
 
               <div className="space-y-1.5 pt-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">Generated Text Output</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block font-bold">Generated Text Output</span>
                 <div className="p-4 rounded-xl border bg-muted/25 font-mono text-sm leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto text-foreground">
                   {viewingItem.output}
                 </div>
@@ -348,7 +384,7 @@ export default function AdminContentPage() {
             </div>
 
             <div className="p-4 border-t flex justify-end bg-muted/10">
-              <Button onClick={() => setViewingItem(null)}>Dismiss</Button>
+              <Button onClick={() => setViewingItem(null)} className="rounded-2xl cursor-pointer">Dismiss</Button>
             </div>
           </div>
         </div>
@@ -356,3 +392,4 @@ export default function AdminContentPage() {
     </div>
   );
 }
+

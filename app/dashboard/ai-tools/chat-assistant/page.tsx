@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Send, Loader2, MessageSquare, Trash2, Plus, Sparkles, MessageCircle } from 'lucide-react';
 import {
@@ -12,10 +15,18 @@ import {
 import { useChatWithAI } from '@/hooks/useAI';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const chatMessageSchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(1, 'Message cannot be empty')
+    .max(1000, 'Message cannot exceed 1000 characters'),
+});
+
+type ChatMessageFormData = z.infer<typeof chatMessageSchema>;
+
 export default function ChatAssistantPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [input, setInput] = useState('');
-  
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // API hooks
@@ -31,6 +42,20 @@ export default function ChatAssistantPage() {
     activeSessionId || ''
   );
 
+  // Form Setup
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm<ChatMessageFormData>({
+    resolver: zodResolver(chatMessageSchema),
+    defaultValues: {
+      message: '',
+    },
+  });
+
   // Auto scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -43,13 +68,13 @@ export default function ChatAssistantPage() {
   // Handle session selection
   const handleSelectSession = (id: string) => {
     setActiveSessionId(id);
-    setInput('');
+    reset({ message: '' });
   };
 
   // Start a fresh workspace
   const handleNewChat = () => {
     setActiveSessionId(null);
-    setInput('');
+    reset({ message: '' });
   };
 
   // Handle session deletion
@@ -65,12 +90,11 @@ export default function ChatAssistantPage() {
   };
 
   // Handle sending a message
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || chatMutation.isPending || createSessionMutation.isPending) return;
+  const onSubmitMessage = async (data: ChatMessageFormData) => {
+    if (chatMutation.isPending || createSessionMutation.isPending) return;
 
-    const messageText = input.trim();
-    setInput('');
+    const messageText = data.message.trim();
+    reset({ message: '' });
 
     try {
       let sessionId = activeSessionId;
@@ -101,6 +125,8 @@ export default function ChatAssistantPage() {
     }
   };
 
+  const isSubmitting = chatMutation.isPending || createSessionMutation.isPending;
+
   return (
     <div className="h-full flex bg-background divide-x divide-muted overflow-hidden animate-in fade-in duration-300">
       {/* Sidebar: Chat History List */}
@@ -108,7 +134,7 @@ export default function ChatAssistantPage() {
         <div className="p-4 border-b">
           <Button
             onClick={handleNewChat}
-            className="w-full flex items-center justify-center gap-2 py-5 rounded-xl text-sm font-bold shadow-sm"
+            className="w-full flex items-center justify-center gap-2 py-5 rounded-2xl text-sm font-bold shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             New Chat Assistant
@@ -142,7 +168,7 @@ export default function ChatAssistantPage() {
                 <button
                   type="button"
                   onClick={(e) => handleDeleteSession(e, sess._id)}
-                  className={`opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-current transition-opacity`}
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-current transition-opacity"
                   disabled={deleteSessionMutation.isPending}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -150,7 +176,7 @@ export default function ChatAssistantPage() {
               </div>
             ))
           ) : (
-            <div className="text-center py-10 text-muted-foreground text-xs">
+            <div className="text-center py-10 text-muted-foreground text-xs font-semibold">
               No historical sessions found
             </div>
           )}
@@ -174,7 +200,7 @@ export default function ChatAssistantPage() {
                   </span>
                 )}
               </h1>
-              <p className="text-muted-foreground text-xs">Contextual conversational AI helper</p>
+              <p className="text-muted-foreground text-xs font-medium">Contextual conversational AI helper</p>
             </div>
           </div>
 
@@ -183,7 +209,7 @@ export default function ChatAssistantPage() {
               variant="outline"
               size="sm"
               onClick={handleNewChat}
-              className="md:hidden flex items-center gap-1.5"
+              className="md:hidden flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               New Chat
@@ -194,10 +220,10 @@ export default function ChatAssistantPage() {
                 size="sm"
                 onClick={(e) => handleDeleteSession(e, activeSessionId)}
                 disabled={deleteSessionMutation.isPending}
-                className="text-destructive border-destructive/20 bg-destructive/5 hover:bg-destructive/10"
+                className="text-destructive border-destructive/20 bg-destructive/5 hover:bg-destructive/10 cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
-                <span className="hidden sm:inline ml-1.5">Clear History</span>
+                <span className="hidden sm:inline ml-1.5 font-semibold">Clear History</span>
               </Button>
             )}
           </div>
@@ -217,26 +243,26 @@ export default function ChatAssistantPage() {
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs text-left w-full pt-4">
                 <div
-                  onClick={() => setInput('Explain the core benefits of SOLID design principles.')}
-                  className="p-3 border rounded-xl hover:border-primary/40 cursor-pointer bg-card/30 transition-colors"
+                  onClick={() => setValue('message', 'Explain the core benefits of SOLID design principles.')}
+                  className="p-3.5 border rounded-2xl hover:border-primary/40 cursor-pointer bg-card/30 transition-colors hover:shadow-sm"
                 >
-                  <span className="font-semibold block mb-1">💡 Software Engineering</span>
+                  <span className="font-bold block mb-1 text-emerald-600 dark:text-emerald-400">💡 Software Engineering</span>
                   Explain the core benefits of SOLID design...
                 </div>
                 <div
-                  onClick={() => setInput('Write a clean node script executing sequential files.')}
-                  className="p-3 border rounded-xl hover:border-primary/40 cursor-pointer bg-card/30 transition-colors"
+                  onClick={() => setValue('message', 'Write a clean node script executing sequential files.')}
+                  className="p-3.5 border rounded-2xl hover:border-primary/40 cursor-pointer bg-card/30 transition-colors hover:shadow-sm"
                 >
-                  <span className="font-semibold block mb-1">💻 Scripting & Logic</span>
+                  <span className="font-bold block mb-1 text-emerald-600 dark:text-emerald-400">💻 Scripting & Logic</span>
                   Write a clean node script executing...
                 </div>
               </div>
             </div>
           ) : isMessagesLoading ? (
             <div className="space-y-4">
-              <Skeleton className="h-16 w-2/3 rounded-xl rounded-bl-none" />
-              <Skeleton className="h-20 w-1/2 ml-auto rounded-xl rounded-br-none" />
-              <Skeleton className="h-16 w-3/4 rounded-xl rounded-bl-none" />
+              <Skeleton className="h-16 w-2/3 rounded-2xl rounded-bl-none" />
+              <Skeleton className="h-20 w-1/2 ml-auto rounded-2xl rounded-br-none" />
+              <Skeleton className="h-16 w-3/4 rounded-2xl rounded-bl-none" />
             </div>
           ) : (
             // Message list
@@ -267,14 +293,14 @@ export default function ChatAssistantPage() {
           )}
 
           {/* Thinking loader */}
-          {(chatMutation.isPending || createSessionMutation.isPending) && (
+          {isSubmitting && (
             <div className="flex justify-start animate-in fade-in duration-300">
               <div className="bg-card text-foreground rounded-2xl rounded-tl-none border border-muted px-4 py-3 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="flex gap-1.5 items-center">
-                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" />
-                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                    <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
                   </div>
                   <span className="text-xs text-muted-foreground font-semibold animate-pulse">AI is thinking...</span>
                 </div>
@@ -287,40 +313,47 @@ export default function ChatAssistantPage() {
 
         {/* Input box */}
         <div className="border-t p-4 sm:p-5 bg-card/10 shadow-sm">
-          <form onSubmit={handleSendMessage} className="flex gap-3">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                activeSessionId
-                  ? 'Send a follow-up message...'
-                  : 'Start a new conversation session...'
-              }
-              disabled={chatMutation.isPending || createSessionMutation.isPending}
-              className="flex-1 px-4 py-3 rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 text-sm sm:text-base"
-            />
-            <Button
-              type="submit"
-              disabled={!input.trim() || chatMutation.isPending || createSessionMutation.isPending}
-              size="lg"
-              className="gap-2 shadow-sm rounded-xl px-6 cursor-pointer"
-            >
-              {chatMutation.isPending || createSessionMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  Send
-                </>
-              )}
-            </Button>
+          <form onSubmit={handleSubmit(onSubmitMessage)} className="space-y-2">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                {...register('message')}
+                placeholder={
+                  activeSessionId
+                    ? 'Send a follow-up message...'
+                    : 'Start a new conversation session...'
+                }
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-3 rounded-2xl border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 text-sm sm:text-base transition-all"
+              />
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                size="lg"
+                className="gap-2 shadow-sm rounded-2xl px-6 cursor-pointer font-bold"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Send
+                  </>
+                )}
+              </Button>
+            </div>
+            {errors.message && (
+              <p className="text-xs text-destructive font-semibold pl-2">
+                {errors.message.message}
+              </p>
+            )}
           </form>
         </div>
       </div>
     </div>
   );
 }
+
