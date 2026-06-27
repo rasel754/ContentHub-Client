@@ -1,36 +1,56 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useUserProfile, useUpdateProfile } from '@/hooks/useUser';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, Mail, Shield, Calendar, IdCard, Loader2, Sparkles } from 'lucide-react';
 
+const profileSchema = z.object({
+  firstName: z.string().trim().min(1, 'First name is required'),
+  lastName: z.string().trim().min(1, 'Last name is required'),
+  profileImageUrl: z.string().trim().url('Profile image URL must be a valid URL').optional().or(z.literal('')),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
+
 export default function ProfilePage() {
   const { data: profile, isLoading: isProfileLoading, isError } = useUserProfile();
   const updateProfileMutation = useUpdateProfile();
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [profileImageUrl, setProfileImageUrl] = useState('');
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      profileImageUrl: '',
+    },
+  });
 
-  // Update form inputs when profile loads
+  // Pre-populate fields on profile load
   useEffect(() => {
     if (profile) {
-      setFirstName(profile.firstName || '');
-      setLastName(profile.lastName || '');
-      setProfileImageUrl(profile.profileImageUrl || '');
+      reset({
+        firstName: profile.firstName || '',
+        lastName: profile.lastName || '',
+        profileImageUrl: profile.profileImageUrl || '',
+      });
     }
-  }, [profile]);
+  }, [profile, reset]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!firstName.trim() || !lastName.trim()) return;
-
+  const onSubmit = (data: ProfileFormData) => {
     updateProfileMutation.mutate({
-      firstName,
-      lastName,
-      profileImageUrl: profileImageUrl || undefined,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      profileImageUrl: data.profileImageUrl || undefined,
     });
   };
 
@@ -134,32 +154,40 @@ export default function ProfilePage() {
             Edit Profile Details
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">First Name</label>
                 <input
                   type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  {...register('firstName')}
                   disabled={isUpdating}
                   required
                   placeholder="John"
-                  className="w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                  className={`w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 ${
+                    errors.firstName ? 'border-destructive focus:ring-destructive' : ''
+                  }`}
                 />
+                {errors.firstName && (
+                  <p className="mt-1 text-xs text-destructive font-semibold">{errors.firstName.message}</p>
+                )}
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold">Last Name</label>
                 <input
                   type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  {...register('lastName')}
                   disabled={isUpdating}
                   required
                   placeholder="Doe"
-                  className="w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                  className={`w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 ${
+                    errors.lastName ? 'border-destructive focus:ring-destructive' : ''
+                  }`}
                 />
+                {errors.lastName && (
+                  <p className="mt-1 text-xs text-destructive font-semibold">{errors.lastName.message}</p>
+                )}
               </div>
             </div>
 
@@ -167,16 +195,20 @@ export default function ProfilePage() {
               <label className="text-sm font-semibold">Profile Image URL</label>
               <input
                 type="url"
-                value={profileImageUrl}
-                onChange={(e) => setProfileImageUrl(e.target.value)}
+                {...register('profileImageUrl')}
                 disabled={isUpdating}
                 placeholder="https://example.com/avatar.jpg"
-                className="w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                className={`w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 ${
+                  errors.profileImageUrl ? 'border-destructive focus:ring-destructive' : ''
+                }`}
               />
+              {errors.profileImageUrl && (
+                <p className="mt-1 text-xs text-destructive font-semibold">{errors.profileImageUrl.message}</p>
+              )}
             </div>
 
             <div className="border-t pt-4 flex justify-end">
-              <Button type="submit" disabled={isUpdating} size="lg" className="min-w-[120px]">
+              <Button type="submit" disabled={isUpdating} size="lg" className="min-w-[120px] cursor-pointer">
                 {isUpdating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />

@@ -96,7 +96,7 @@ export default function Home() {
       <Navbar />
       <main className="flex flex-col">
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center bg-gradient-to-b from-blue-50 to-background dark:from-slate-900 dark:to-background">
+        <section className="relative min-h-[70vh] flex items-center bg-gradient-to-b from-blue-50 to-background dark:from-slate-900 dark:to-background">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
             <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10"></div>
@@ -244,8 +244,86 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FAQ Section */}
+        {/* Pricing Plans Section (New Section 7) */}
         <section className="py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Flexible Pricing Plans</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Choose the plan that fits your content generation needs
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  name: 'Starter',
+                  price: '$0',
+                  desc: 'Perfect for testing out our platform features',
+                  features: ['100 Free Credits/mo', 'AI Content Generator access', 'Basic templates', 'Community support'],
+                  cta: 'Start for Free',
+                  popular: false,
+                },
+                {
+                  name: 'Pro Creator',
+                  price: '$29',
+                  desc: 'Ideal for professional writers and creators',
+                  features: ['1,000 Premium Credits/mo', 'Full AI Generator access', 'Contextual AI Chat Assistant', 'Priority email support'],
+                  cta: 'Get Started Pro',
+                  popular: true,
+                },
+                {
+                  name: 'Enterprise',
+                  price: '$99',
+                  desc: 'Built for corporate teams and agencies',
+                  features: ['Unlimited Credits', 'Bespoke fine-tuned models', 'Team collaboration workspace', '24/7 dedicated support'],
+                  cta: 'Contact Sales',
+                  popular: false,
+                },
+              ].map((plan, idx) => (
+                <div
+                  key={idx}
+                  className={`p-8 rounded-2xl border flex flex-col justify-between relative bg-card ${
+                    plan.popular ? 'border-primary shadow-lg scale-105' : 'bg-background hover:shadow-md'
+                  }`}
+                >
+                  {plan.popular && (
+                    <span className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full uppercase">
+                      Most Popular
+                    </span>
+                  )}
+                  <div className="space-y-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 min-h-[2rem]">{plan.desc}</p>
+                    </div>
+                    <div className="flex items-baseline">
+                      <span className="text-4xl font-extrabold">{plan.price}</span>
+                      <span className="text-muted-foreground text-sm ml-1">/month</span>
+                    </div>
+                    <ul className="space-y-3 text-sm text-muted-foreground border-t pt-6">
+                      {plan.features.map((feature, fIdx) => (
+                        <li key={fIdx} className="flex items-center gap-2">
+                          <span className="text-primary font-bold">✓</span> {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="pt-8">
+                    <Link href={ROUTES.REGISTER} className="block">
+                      <Button className="w-full font-bold py-5 rounded-xl cursor-pointer" variant={plan.popular ? 'default' : 'outline'}>
+                        {plan.cta}
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-20 bg-muted/30">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
@@ -253,13 +331,40 @@ export default function Home() {
 
             <div className="space-y-6">
               {faqs.map((faq, idx) => (
-                <details key={idx} className="group border rounded-lg p-6 cursor-pointer hover:bg-muted/50 transition-colors">
+                <details key={idx} className="group border rounded-lg p-6 cursor-pointer hover:bg-muted/50 transition-colors bg-card">
                   <summary className="flex items-center justify-between font-semibold">
                     {faq.question}
                     <span className="transition-transform group-open:rotate-180">▼</span>
                   </summary>
                   <p className="mt-4 text-muted-foreground">{faq.answer}</p>
                 </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Core Technology Stack Section (New Section 8) */}
+        <section className="py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4 font-sans tracking-tight">Our Core Technology Stack</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Built with industry-leading, highly scalable cloud architectures
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              {[
+                { name: 'Next.js App Router', desc: 'React Framework', icon: '⚡' },
+                { name: 'OpenAI GPT Models', desc: 'Artificial Intelligence', icon: '🤖' },
+                { name: 'Clerk SSO SDK', desc: 'Access Control Auth', icon: '🔐' },
+                { name: 'MongoDB Database', desc: 'Mongoose Storage Layer', icon: '🍃' },
+              ].map((tech, idx) => (
+                <div key={idx} className="p-6 rounded-2xl border bg-card hover:border-primary/40 transition-colors shadow-sm space-y-3">
+                  <div className="text-4xl">{tech.icon}</div>
+                  <h3 className="font-bold text-sm sm:text-base text-foreground leading-none">{tech.name}</h3>
+                  <p className="text-xs text-muted-foreground">{tech.desc}</p>
+                </div>
               ))}
             </div>
           </div>

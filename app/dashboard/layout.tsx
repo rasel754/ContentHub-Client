@@ -19,6 +19,11 @@ const adminItems = [
   { iconName: 'bar-chart-3', label: 'Stats', href: '/dashboard/admin/stats' },
 ]
 
+const managerItems = [
+  { iconName: 'file-text', label: 'Content', href: '/dashboard/admin/content' },
+  { iconName: 'bar-chart-3', label: 'Stats', href: '/dashboard/admin/stats' },
+]
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -28,6 +33,7 @@ export default async function DashboardLayout({
 
   // Middleware handles authentication redirect, this layout just renders authenticated content
   const isAdmin = user?.publicMetadata?.role === 'admin'
+  const isManager = user?.publicMetadata?.role === 'manager'
 
   const plainUser = user ? {
     firstName: user.firstName,
@@ -41,8 +47,10 @@ export default async function DashboardLayout({
       <DashboardSidebar
         user={plainUser}
         isAdmin={isAdmin}
+        isManager={isManager}
         navItems={navItems}
         adminItems={adminItems}
+        managerItems={managerItems}
       />
 
       {/* Main Content */}

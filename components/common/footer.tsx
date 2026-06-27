@@ -29,10 +29,10 @@ export function Footer() {
               <Link href={ROUTES.BLOG} className="text-muted-foreground hover:text-foreground transition-colors">
                 Blog
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href={ROUTES.HOME} className="text-muted-foreground hover:text-foreground transition-colors">
                 Pricing
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href={ROUTES.HOME} className="text-muted-foreground hover:text-foreground transition-colors">
                 Features
               </Link>
             </div>
@@ -48,10 +48,10 @@ export function Footer() {
               <Link href={ROUTES.CONTACT} className="text-muted-foreground hover:text-foreground transition-colors">
                 Contact
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href={ROUTES.ABOUT} className="text-muted-foreground hover:text-foreground transition-colors">
                 Careers
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href={ROUTES.ABOUT} className="text-muted-foreground hover:text-foreground transition-colors">
                 Press
               </Link>
             </div>
@@ -64,10 +64,10 @@ export function Footer() {
               <Link href={ROUTES.PRIVACY} className="text-muted-foreground hover:text-foreground transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href={ROUTES.PRIVACY} className="text-muted-foreground hover:text-foreground transition-colors">
                 Terms of Service
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link href={ROUTES.PRIVACY} className="text-muted-foreground hover:text-foreground transition-colors">
                 Cookie Policy
               </Link>
             </div>
@@ -80,13 +80,13 @@ export function Footer() {
               © 2024 ContentHub. All rights reserved.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
                 𝕏
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="GitHub">
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="GitHub">
                 GitHub
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn">
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="LinkedIn">
                 LinkedIn
               </a>
             </div>

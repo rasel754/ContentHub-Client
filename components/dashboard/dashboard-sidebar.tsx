@@ -22,6 +22,7 @@ interface DashboardSidebarProps {
     emailAddresses: Array<{ emailAddress: string }>
   } | null
   isAdmin: boolean
+  isManager: boolean
   navItems: Array<{
     iconName: string
     label: string
@@ -32,13 +33,20 @@ interface DashboardSidebarProps {
     label: string
     href: string
   }>
+  managerItems: Array<{
+    iconName: string
+    label: string
+    href: string
+  }>
 }
 
 export function DashboardSidebar({
   user,
   isAdmin,
+  isManager,
   navItems,
   adminItems,
+  managerItems,
 }: DashboardSidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
@@ -86,6 +94,26 @@ export function DashboardSidebar({
           <div>
             {sidebarOpen && <p className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase pt-4">Admin</p>}
             {adminItems.map((item) => {
+              const IconComponent = iconMap[item.iconName as keyof typeof iconMap]
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted transition-colors text-sm"
+                >
+                  {IconComponent && <IconComponent size={20} />}
+                  {sidebarOpen && <span>{item.label}</span>}
+                </Link>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Manager Nav */}
+        {isManager && !isAdmin && (
+          <div>
+            {sidebarOpen && <p className="text-xs font-semibold text-muted-foreground mb-3 px-2 uppercase pt-4">Manager</p>}
+            {managerItems.map((item) => {
               const IconComponent = iconMap[item.iconName as keyof typeof iconMap]
               return (
                 <Link

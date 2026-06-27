@@ -45,6 +45,7 @@ export const NAV_ITEMS = [
 export const USER_ROLES = {
   ADMIN: 'admin',
   USER: 'user',
+  MANAGER: 'manager',
   GUEST: 'guest',
 } as const;
 

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, ChevronLeft, ChevronRight, FileText, Sparkles, Filter, RefreshCw } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, FileText, Sparkles, Filter, RefreshCw, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAllContent } from '@/hooks/useContent';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,8 +29,18 @@ const typeLabels: Record<string, string> = {
 export default function ExplorePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [dateRange, setDateRange] = useState('all'); // all, 24h, 7d, 30d
   const [sortBy, setSortBy] = useState('latest'); // latest, oldest
+
+  // Debounce search state
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   // Fetch all contents from backend (with optional backend format filter)
   const {
@@ -49,12 +59,27 @@ export default function ExplorePage() {
 
   const contentList = data?.data || [];
 
-  // Filter content items client-side via the search term
+  // Filter content items client-side via the search term & date range
   const filtered = contentList.filter((item) => {
     const matchesSearch =
-      item.prompt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.output.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
+      item.prompt.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      item.output.toLowerCase().includes(debouncedSearch.toLowerCase());
+
+    let matchesDate = true;
+    if (dateRange !== 'all') {
+      const createdTime = new Date(item.createdAt).getTime();
+      const now = new Date().getTime();
+      const elapsedHours = (now - createdTime) / (1000 * 60 * 60);
+      if (dateRange === '24h') {
+        matchesDate = elapsedHours <= 24;
+      } else if (dateRange === '7d') {
+        matchesDate = elapsedHours <= 24 * 7;
+      } else if (dateRange === '30d') {
+        matchesDate = elapsedHours <= 24 * 30;
+      }
+    }
+
+    return matchesSearch && matchesDate;
   });
 
   // Client-side pagination
@@ -115,7 +140,7 @@ export default function ExplorePage() {
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             {/* Format Filter */}
             <div className="flex-1 space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
@@ -135,6 +160,27 @@ export default function ExplorePage() {
                     {cat.label}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Date Range Filter */}
+            <div className="flex-1 space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5" />
+                Date Range
+              </label>
+              <select
+                value={dateRange}
+                onChange={(e) => {
+                  setDateRange(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              >
+                <option value="all">All Time</option>
+                <option value="24h">Last 24 Hours</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
               </select>
             </div>
 

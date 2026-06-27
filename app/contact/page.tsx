@@ -1,31 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
-import { Mail, Phone, MapPin } from 'lucide-react'
+import { Mail, Phone, MapPin, Loader2 } from 'lucide-react'
+
+const contactSchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters long'),
+  email: z.string().trim().min(1, 'Email is required').email('Invalid email address'),
+  subject: z.string().min(1, 'Please select a subject'),
+  message: z.string().trim().min(10, 'Message must be at least 10 characters long'),
+})
+
+type ContactFormData = z.infer<typeof contactSchema>
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
+  })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true)
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
     setSubmitted(true)
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    reset()
     setTimeout(() => setSubmitted(false), 3000)
     setIsSubmitting(false)
   }
@@ -86,41 +101,47 @@ export default function ContactPage() {
 
             {/* Form */}
             <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <label className="block text-sm font-semibold mb-2">Name</label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    {...register('name')}
+                    disabled={isSubmitting}
+                    className={`w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary ${
+                      errors.name ? 'border-destructive focus:ring-destructive' : ''
+                    }`}
                     placeholder="Your name"
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-destructive font-semibold">{errors.name.message}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <label className="block text-sm font-semibold mb-2">Email</label>
                   <input
                     type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    {...register('email')}
+                    disabled={isSubmitting}
+                    className={`w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary ${
+                      errors.email ? 'border-destructive focus:ring-destructive' : ''
+                    }`}
                     placeholder="your@email.com"
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-xs text-destructive font-semibold">{errors.email.message}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Subject</label>
+                  <label className="block text-sm font-semibold mb-2">Subject</label>
                   <select
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    {...register('subject')}
+                    disabled={isSubmitting}
+                    className={`w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary ${
+                      errors.subject ? 'border-destructive focus:ring-destructive' : ''
+                    }`}
                   >
                     <option value="">Select a subject</option>
                     <option value="support">Support</option>
@@ -128,28 +149,41 @@ export default function ContactPage() {
                     <option value="feedback">Feedback</option>
                     <option value="other">Other</option>
                   </select>
+                  {errors.subject && (
+                    <p className="mt-1 text-xs text-destructive font-semibold">{errors.subject.message}</p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
+                  <label className="block text-sm font-semibold mb-2">Message</label>
                   <textarea
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    required
+                    {...register('message')}
+                    disabled={isSubmitting}
                     rows={5}
-                    className="w-full px-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                    className={`w-full px-4 py-2.5 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary resize-none ${
+                      errors.message ? 'border-destructive focus:ring-destructive' : ''
+                    }`}
                     placeholder="Your message..."
                   />
+                  {errors.message && (
+                    <p className="mt-1 text-xs text-destructive font-semibold">{errors.message.message}</p>
+                  )}
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full"
+                  className="w-full py-5 rounded-xl cursor-pointer"
                   size="lg"
                 >
-                  {isSubmitting ? 'Sending...' : 'Send Message'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    'Send Message'
+                  )}
                 </Button>
 
                 {submitted && (
