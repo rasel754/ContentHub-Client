@@ -131,7 +131,7 @@ export default function ChatAssistantPage() {
                 onClick={() => handleSelectSession(sess._id)}
                 className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer text-sm font-semibold transition-all select-none ${
                   activeSessionId === sess._id
-                    ? 'bg-primary text-white shadow-sm'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
                     : 'hover:bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -250,13 +250,13 @@ export default function ChatAssistantPage() {
                   <div
                     className={`max-w-xl px-4 py-3 rounded-2xl shadow-sm text-sm border leading-relaxed ${
                       !isAI
-                        ? 'bg-primary text-white rounded-tr-none border-primary/20'
+                        ? 'bg-primary text-primary-foreground rounded-tr-none border-primary/20'
                         : 'bg-card text-foreground rounded-tl-none border-muted'
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{message.content}</p>
                     <div className="flex justify-end pt-1 mt-1.5 border-t border-white/10 dark:border-black/5">
-                      <span className={`text-[10px] ${!isAI ? 'text-blue-100' : 'text-muted-foreground'}`}>
+                      <span className={`text-[10px] ${!isAI ? 'text-primary-foreground/75' : 'text-muted-foreground'}`}>
                         {formatTime(message.createdAt)}
                       </span>
                     </div>

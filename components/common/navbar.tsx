@@ -3,22 +3,17 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser, SignOutButton } from '@clerk/nextjs'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Menu, X, LogOut, User, Settings } from 'lucide-react'
 import { NAV_ITEMS, ROUTES } from '@/config/constants'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/common/theme-toggle'
 
 export function Navbar() {
   const pathname = usePathname()
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const [isDark, setIsDark] = useState(false)
-
-  useEffect(() => {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    setIsDark(prefersDark)
-  }, [])
 
   const isPublicRoute = !pathname.startsWith('/dashboard')
 
@@ -54,16 +49,7 @@ export function Navbar() {
           {/* Right Side - Auth / Menu */}
           <div className="flex items-center gap-4">
             {/* Theme Toggle */}
-            <button
-              onClick={() => {
-                document.documentElement.classList.toggle('dark')
-                setIsDark(!isDark)
-              }}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
-              aria-label="Toggle theme"
-            >
-              {isDark ? '☀️' : '🌙'}
-            </button>
+            <ThemeToggle />
 
             {isLoaded && !user && isPublicRoute && (
               <div className="hidden sm:flex gap-2">

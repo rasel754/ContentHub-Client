@@ -28,7 +28,7 @@ export default function SignInPage() {
           <SignIn
             appearance={{
               elements: {
-                formButtonPrimary: 'bg-primary text-white hover:bg-primary/90 w-full',
+                formButtonPrimary: 'bg-primary text-primary-foreground hover:bg-primary/90 w-full',
                 card: 'bg-background border border-border',
                 headerTitle: 'hidden',
                 headerSubtitle: 'hidden',

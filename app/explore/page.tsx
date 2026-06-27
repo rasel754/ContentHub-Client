@@ -252,7 +252,7 @@ export default function ExplorePage() {
                       onClick={() => setCurrentPage(page)}
                       className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${
                         currentPage === page
-                          ? 'bg-primary text-white shadow-sm'
+                          ? 'bg-primary text-primary-foreground shadow-sm'
                           : 'hover:bg-muted text-muted-foreground'
                       }`}
                     >

@@ -3,6 +3,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import Link from 'next/link'
 import { ROUTES } from '@/config/constants'
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
+import { ThemeToggle } from '@/components/common/theme-toggle'
 
 const navItems = [
   { iconName: 'home', label: 'Overview', href: ROUTES.DASHBOARD },
@@ -47,8 +48,11 @@ export default async function DashboardLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <header className="border-b h-16 flex items-center px-6">
+        <header className="border-b h-16 flex items-center justify-between px-6 bg-card/50 backdrop-blur">
           <h1 className="text-2xl font-bold">Welcome, {user?.firstName || 'User'}!</h1>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+          </div>
         </header>
 
         {/* Content */}

@@ -96,7 +96,7 @@ function GeneratorContent() {
                   }}
                   className={`p-3 rounded-xl border text-center text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                     contentType === type.value
-                      ? 'bg-primary text-white border-primary shadow-sm'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                       : 'bg-background border-muted hover:border-primary/40 text-muted-foreground hover:text-foreground'
                   }`}
                 >

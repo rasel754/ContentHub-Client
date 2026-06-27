@@ -103,41 +103,76 @@ export default function Home() {
           </div>
 
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
-            <div className="text-center space-y-8">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-balance">
-                Create Amazing <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">Content Instantly</span>
-              </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto text-balance">
-                Leverage AI-powered tools to generate high-quality content, from blog posts to social media—all in seconds.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                {!isLoaded || !user ? (
-                  <>
-                    <Link href={ROUTES.REGISTER}>
-                      <Button size="lg" className="w-full sm:w-auto">
-                        Get Started Free
-                      </Button>
-                    </Link>
-                    <Link href={ROUTES.EXPLORE}>
-                      <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                        Explore Features
-                      </Button>
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link href={ROUTES.DASHBOARD}>
-                      <Button size="lg" className="w-full sm:w-auto">
-                        Go to Dashboard
-                      </Button>
-                    </Link>
-                    <Link href={ROUTES.EXPLORE}>
-                      <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                        Explore More
-                      </Button>
-                    </Link>
-                  </>
-                )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              {/* Left Column: Text & CTAs */}
+              <div className="text-center lg:text-left space-y-8 max-w-2xl mx-auto lg:mx-0">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-balance leading-[1.1]">
+                  Create Amazing <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-600">Content Instantly</span>
+                </h1>
+                <p className="text-lg sm:text-xl text-muted-foreground text-balance">
+                  Leverage AI-powered tools to generate high-quality content, from blog posts to social media—all in seconds.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                  {!isLoaded || !user ? (
+                    <>
+                      <Link href={ROUTES.REGISTER}>
+                        <Button size="lg" className="w-full sm:w-auto">
+                          Get Started Free
+                        </Button>
+                      </Link>
+                      <Link href={ROUTES.EXPLORE}>
+                        <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                          Explore Features
+                        </Button>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <Link href={ROUTES.DASHBOARD}>
+                        <Button size="lg" className="w-full sm:w-auto">
+                          Go to Dashboard
+                        </Button>
+                      </Link>
+                      <Link href={ROUTES.EXPLORE}>
+                        <Button size="lg" variant="outline" className="w-full sm:w-auto">
+                          Explore More
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Premium Mock Browser & Image */}
+              <div className="relative w-full max-w-xl mx-auto lg:max-w-none animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                {/* Glowing background blob behind image */}
+                <div className="absolute -inset-4 bg-gradient-to-tr from-blue-500 to-emerald-500 rounded-3xl blur-2xl opacity-15 dark:opacity-20"></div>
+                
+                {/* Browser Mockup */}
+                <div className="relative rounded-2xl border bg-card shadow-2xl overflow-hidden">
+                  {/* Browser Header */}
+                  <div className="flex items-center gap-2 px-4 py-3 bg-muted/50 border-b">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    </div>
+                    <div className="flex-1 mx-4">
+                      <div className="bg-background/80 border rounded text-[10px] text-muted-foreground text-center py-1 truncate max-w-xs mx-auto">
+                        contenthub.ai/dashboard
+                      </div>
+                    </div>
+                  </div>
+                  {/* Browser Viewport */}
+                  <div className="bg-card p-1">
+                    <img
+                      src="/dashboard_preview.png"
+                      alt="AI ContentHub Dashboard Preview"
+                      className="w-full h-auto rounded-lg shadow-sm object-cover"
+                      loading="eager"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
