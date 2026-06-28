@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const isAdmin = user?.publicMetadata?.role === 'admin';
   const isManager = user?.publicMetadata?.role === 'manager';
 
-  const { data: contentsData, isLoading } = useAllContent({ all: true });
+  const { data: contentsData, isLoading } = useAllContent({ limit: 1000 });
   const contents = contentsData?.data || [];
 
   const totalContentGenerated = contents.length;

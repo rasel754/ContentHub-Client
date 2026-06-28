@@ -8,7 +8,7 @@ import { ActivityOverTimeChart, CategoryDistributionChart } from '@/components/d
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AnalyticsPage() {
-  const { data: contentsData, isLoading, isError, refetch, isFetching } = useAllContent({ all: true });
+  const { data: contentsData, isLoading, isError, refetch, isFetching } = useAllContent({ limit: 1000 });
   const contents = contentsData?.data || [];
 
   // 1. Core aggregates
