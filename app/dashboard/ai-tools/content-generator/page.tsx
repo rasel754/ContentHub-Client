@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Copy, Download, Loader2, Sparkles, FileText } from 'lucide-react';
 import { useGenerateContent } from '@/hooks/useAI';
 import { useToast } from '@/components/ui/toast';

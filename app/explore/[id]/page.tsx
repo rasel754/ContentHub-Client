@@ -22,12 +22,12 @@ const typeLabels: Record<string, string> = {
 };
 
 interface PageProps {
-  params: Promise<{ id: string }> | { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function DetailPage({ params }: PageProps) {
   // Handle async params in Next.js 16/15
-  const resolvedParams = React.use(params as any) as { id: string };
+  const resolvedParams = React.use(params);
   const id = resolvedParams.id;
 
   const { success } = useToast();

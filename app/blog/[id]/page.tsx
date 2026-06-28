@@ -125,11 +125,11 @@ Future content funnels won't rely on static blog posts. Rather, readers will ask
 ];
 
 interface PageProps {
-  params: Promise<{ id: string }> | { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function BlogDetailPage({ params }: PageProps) {
-  const resolvedParams = React.use(params as any) as { id: string };
+  const resolvedParams = React.use(params);
   const blogId = parseInt(resolvedParams.id, 10);
   const { success } = useToast();
 
