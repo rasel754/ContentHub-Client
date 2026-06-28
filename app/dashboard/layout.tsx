@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ROUTES } from '@/config/constants'
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
 import { ThemeToggle } from '@/components/common/theme-toggle'
+import { Home } from 'lucide-react'
 
 const navItems = [
   { iconName: 'home', label: 'Overview', href: ROUTES.DASHBOARD },
@@ -59,6 +60,13 @@ export default async function DashboardLayout({
         <header className="border-b h-16 flex items-center justify-between px-6 bg-card/50 backdrop-blur">
           <h1 className="text-2xl font-bold">Welcome, {user?.firstName || 'User'}!</h1>
           <div className="flex items-center gap-4">
+            <Link
+              href={ROUTES.HOME}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border border-border bg-background hover:bg-muted hover:text-foreground text-sm font-medium transition-colors shadow-sm select-none"
+            >
+              <Home size={16} />
+              <span>Back to Home</span>
+            </Link>
             <ThemeToggle />
           </div>
         </header>
